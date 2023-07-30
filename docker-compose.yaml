@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  mysql: 
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    container_name: mysql
+    networks:
+      - mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=adminpw
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=adminpw
+      - MYSQL_TCP_PORT=3306
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    ports:
+      - "3000:80"
+    container_name: phpmyadmin
+    depends_on:
+      - mysql
+    restart: always
+    networks:
+      - mysql
+    environment:
+      - PMA_PORT=3306
+      - PMA_HOST=mysql
+networks:
+  mysql:
+    driver: bridge
