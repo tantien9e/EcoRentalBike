@@ -11,7 +11,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import app.ebr.domains.enums.BicycleType;
@@ -32,7 +31,7 @@ public class Bicycle {
     @JoinColumn(name = "parkinglot_id")
     private ParkingLot parkingLot;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 

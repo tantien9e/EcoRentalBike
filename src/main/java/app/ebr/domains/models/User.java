@@ -1,13 +1,14 @@
 package app.ebr.domains.models;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.auth0.jwt.JWT;
@@ -29,8 +30,8 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @OneToOne(mappedBy = "user")
-    private Bicycle bicycle;
+    @OneToMany(mappedBy = "user")
+    private List<Bicycle> bicycles;
 
     public User() {
 
@@ -73,6 +74,14 @@ public class User {
                 .withClaim("uuid", this.id)
                 .sign(algorithm);
         return jwtToken;
+    }
+
+    public void setBicycles(List<Bicycle> bicycles) {
+        this.bicycles = bicycles;
+    }
+
+    public List<Bicycle> getBicycles() {
+        return bicycles;
     }
 
 }
