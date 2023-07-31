@@ -2,6 +2,7 @@ package app.ebr.domains.models;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -16,40 +17,44 @@ import javax.persistence.Table;
 import app.ebr.domains.enums.BicycleType;
 
 @Entity
-@Table(name = "bicycles")
+@Table(name = "bicycle")
 public class Bicycle {
-
-    public Bicycle() {
-
-    }
-
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "parkinglot_id")
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "parking_lot_id")
     private ParkingLot parkingLot;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "using")
-    private boolean using;
+    // @Column(name = "using")
+    // private boolean using;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "bicycle_type")
     private BicycleType bicycleType;
 
     @Column(name = "time_started")
     private Date timeStarted;
 
-    public void setId(long id) {
+    public Bicycle() {
+
+    }
+
+    public Bicycle(BicycleType bicycleType) {
+        this.bicycleType = bicycleType;
+    }
+
+    public void setId(int id) {
         this.id = id;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
@@ -61,13 +66,13 @@ public class Bicycle {
         return parkingLot;
     }
 
-    public void setUsing(boolean using) {
-        this.using = using;
-    }
+    // public void setUsing(boolean using) {
+    // this.using = using;
+    // }
 
-    public boolean isUsing() {
-        return using;
-    }
+    // public boolean isUsing() {
+    // return using;
+    // }
 
     public void setUser(User user) {
         this.user = user;
@@ -92,4 +97,5 @@ public class Bicycle {
     public BicycleType getBicycleType() {
         return bicycleType;
     }
+
 }

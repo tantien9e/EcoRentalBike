@@ -2,8 +2,11 @@ package app.ebr.domains.models;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,21 +17,19 @@ import javax.persistence.Table;
 import app.ebr.domains.enums.BillStatus;
 
 @Entity
-@Table(name = "bills")
+@Table(name = "bill")
 public class Bill {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "bicycle_id")
-    private Bicycle bicycle;
-
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "status")
     private BillStatus status;
 
@@ -48,20 +49,19 @@ public class Bill {
 
     }
 
-    public Bill(User user, Bicycle bicycle, float total, Date timeStarted, Date timeEnded) {
+    public Bill(User user, float total, Date timeStarted, Date timeEnded) {
         this.user = user;
-        this.bicycle = bicycle;
         this.status = BillStatus.PENDING;
         this.total = total;
         this.timeStarted = timeStarted;
         this.timeEnded = timeEnded;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
@@ -71,14 +71,6 @@ public class Bill {
 
     public User getUser() {
         return user;
-    }
-
-    public void setBicycle(Bicycle bicycle) {
-        this.bicycle = bicycle;
-    }
-
-    public Bicycle getBicycle() {
-        return bicycle;
     }
 
     public void setStatus(BillStatus status) {

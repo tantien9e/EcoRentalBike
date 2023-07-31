@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
@@ -34,9 +34,9 @@ public class PaymentController {
     private BillRepository billRepository;
 
     @PostMapping(value = "/{id}")
-    private ResponseEntity<?> pay(
+    public ResponseEntity<?> pay(
             @RequestHeader(required = true, name = HttpHeaders.AUTHORIZATION) String authorization,
-            @RequestParam(required = true) long id) {
+            @PathVariable(required = true) int id) {
         String[] _authorization = authorization.split(" ");
         if (_authorization.length != 2 && !_authorization[0].equals("Bearer")) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -45,7 +45,7 @@ public class PaymentController {
         JWTVerifier verifier = JWT.require(algorithm).build();
         try {
             DecodedJWT decodedJWT = verifier.verify(_authorization[1]);
-            long uuid = decodedJWT.getClaim("uuid").asLong();
+            int uuid = decodedJWT.getClaim("uuid").asInt();
             User user = this.userService.viewUserById(uuid);
             if (user == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);

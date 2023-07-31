@@ -56,7 +56,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User viewUserById(long id) {
+    public User viewUserById(int id) {
         Optional<User> user = this.userRepository.findById(id);
         if (user.isEmpty()) {
             return null;

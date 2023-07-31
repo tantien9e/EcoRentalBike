@@ -17,12 +17,12 @@ import com.auth0.jwt.algorithms.Algorithm;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 public class User {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
@@ -30,8 +30,11 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", targetEntity = Bicycle.class)
     private List<Bicycle> bicycles;
+
+    @OneToMany(mappedBy = "user", targetEntity = Bill.class)
+    private List<Bill> bills;
 
     public User() {
 
@@ -43,11 +46,11 @@ public class User {
         this.password = BCrypt.with(BCrypt.Version.VERSION_2X).hashToString(6, password.toCharArray()).toString();
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -70,7 +73,7 @@ public class User {
     public String encodeJwt() {
         Algorithm algorithm = Algorithm.HMAC256("secret");
         String jwtToken = JWT.create()
-                .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 24 * 60 * 60))
+                .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 24 * 60 * 60 * 1000))
                 .withClaim("uuid", this.id)
                 .sign(algorithm);
         return jwtToken;
@@ -82,6 +85,14 @@ public class User {
 
     public List<Bicycle> getBicycles() {
         return bicycles;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
     }
 
 }

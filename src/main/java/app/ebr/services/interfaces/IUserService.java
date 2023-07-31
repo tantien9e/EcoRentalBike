@@ -10,6 +10,6 @@ public interface IUserService {
 
     User viewUserByEmail(String email);
 
-    User viewUserById(long id);
+    User viewUserById(int id);
 
 }

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import app.ebr.domains.models.Bicycle;
 
 @Repository
-public interface BicycleRepository extends CrudRepository<Bicycle, Long> {
+public interface BicycleRepository extends CrudRepository<Bicycle, Integer> {
 
 }

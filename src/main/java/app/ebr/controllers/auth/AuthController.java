@@ -61,14 +61,14 @@ public class AuthController {
     public ResponseEntity<MeResponseEntity> me(
             @RequestHeader(required = true, name = HttpHeaders.AUTHORIZATION) String authorization) {
         String[] _authorization = authorization.split(" ");
-        if (_authorization.length != 2 && !_authorization[0].equals("Bearer")) {
+        if (_authorization.length != 2 || !_authorization[0].equals("Bearer")) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         Algorithm algorithm = Algorithm.HMAC256("secret");
         JWTVerifier verifier = JWT.require(algorithm).build();
         try {
             DecodedJWT decodedJWT = verifier.verify(_authorization[1]);
-            long uuid = decodedJWT.getClaim("uuid").asLong();
+            int uuid = decodedJWT.getClaim("uuid").asInt();
             User user = this.userService.viewUserById(uuid);
             if (user == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);

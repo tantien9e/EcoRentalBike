@@ -10,10 +10,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
@@ -47,7 +47,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping(value = "/")
-    private ResponseEntity<List<User>> getAll() {
+    public ResponseEntity<List<User>> getAll() {
         Iterable<User> users = this.userRepository.findAll();
         List<User> _users = new ArrayList<>();
         for (User user : users) {
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{id}")
-    private ResponseEntity<User> get(@RequestParam(required = true) long id) {
+    public ResponseEntity<User> get(@PathVariable(required = true) int id) {
         Optional<User> user = this.userRepository.findById(id);
         if (user.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -66,9 +66,9 @@ public class UserController {
     }
 
     @PostMapping(value = "/bicycle/{id}/return")
-    private ResponseEntity<?> bicycleReturn(
+    public ResponseEntity<?> bicycleReturn(
             @RequestHeader(required = true, name = HttpHeaders.AUTHORIZATION) String authorization,
-            @RequestParam(required = true) long id) {
+            @PathVariable(required = true) int id) {
         String[] _authorization = authorization.split(" ");
         if (_authorization.length != 2 && !_authorization[0].equals("Bearer")) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -77,7 +77,7 @@ public class UserController {
         JWTVerifier verifier = JWT.require(algorithm).build();
         try {
             DecodedJWT decodedJWT = verifier.verify(_authorization[1]);
-            long uuid = decodedJWT.getClaim("uuid").asLong();
+            int uuid = decodedJWT.getClaim("uuid").asInt();
             User user = this.userService.viewUserById(uuid);
             if (user == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -88,7 +88,7 @@ public class UserController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
             Bicycle _bicycle = bicycle.get();
-            if (!_bicycle.isUsing() && _bicycle.getUser().getId() != user.getId()) {
+            if (_bicycle.getUser() == null && _bicycle.getUser().getId() != user.getId()) {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
             Date timeEnded = new Date();
@@ -106,8 +106,7 @@ public class UserController {
                 total *= 1.5f;
             }
             // New bill
-            this.billRepository.save(new Bill(user, _bicycle, total, timeStarted, timeEnded));
-            _bicycle.setUsing(false);
+            this.billRepository.save(new Bill(user, total, timeStarted, timeEnded));
             _bicycle.setUser(null);
             _bicycle.setTimeStarted(null);
             this.bicycleRepository.save(_bicycle);

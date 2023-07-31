@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import app.ebr.domains.models.Bill;
 
 @Repository
-public interface BillRepository extends CrudRepository<Bill, Long> {
-
+public interface BillRepository extends CrudRepository<Bill, Integer> {
+    Iterable<Bill> findAllByUserId(int userId);
 }

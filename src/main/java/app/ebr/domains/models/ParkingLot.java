@@ -11,8 +11,19 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "parkinglots")
+@Table(name = "parking_lot")
 public class ParkingLot {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
+
+    @Column(name = "location")
+    private String location;
+
+    @OneToMany(mappedBy = "parkingLot", targetEntity = Bicycle.class)
+    private List<Bicycle> bicycles;
 
     public ParkingLot() {
 
@@ -27,21 +38,11 @@ public class ParkingLot {
         this.bicycles = bicycles;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-
-    @Column(name = "location")
-    private String location;
-
-    @OneToMany(mappedBy = "parkingLot")
-    private List<Bicycle> bicycles;
-
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 

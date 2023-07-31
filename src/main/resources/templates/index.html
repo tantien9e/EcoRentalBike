@@ -25,9 +25,14 @@
             <div id="user-status"></div>
         </div>
     </header>
-    <section>
-        <div class="w-3/5 py-3 px-2 flex justify-between items-center">
-
+    <section class="w-full flex justify-center items-center">
+        <div class="w-3/5 py-3 px-2">
+            <div id="bills"></div>
+        </div>
+    </section>
+    <section class="w-full flex justify-center items-center">
+        <div class="w-3/5 py-3 px-2">
+            <div id="parking-lots"></div>
         </div>
     </section>
     <script>
@@ -36,18 +41,136 @@
             window.location.reload()
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            userStatus = document.getElementById("user-status")
-            jwt = window.localStorage.getItem("jwt")
+        async function borrowBicycle(id) {
+            const jwt = window.localStorage.getItem("jwt")
+            if (!jwt) {
+                window.location.assign(`${window.location.protocol}//${window.location.hostname}:${window.location.port}/signin`)
+            }
+            const response = await window.fetch(`/api/bicycles/${id}/borrow`, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`
+                },
+                method: 'POST'
+            })
+            if (response.ok) {
+                window.location.reload()
+            } else {
+                alert(`Error ${response.status}!`)
+            }
+        }
+
+        async function payBicycle(id) {
+            const jwt = window.localStorage.getItem("jwt")
+            if (!jwt) {
+                window.location.assign(`${window.location.protocol}//${window.location.hostname}:${window.location.port}/signin`)
+            }
+            const response = await window.fetch(`/api/users/bicycle/${id}/return`, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`
+                },
+                method: 'POST'
+            })
+            if (response.ok) {
+                window.location.reload()
+            } else {
+                alert(`Error ${response.status}!`)
+            }
+        }
+
+        async function payBill(id) {
+            const jwt = window.localStorage.getItem("jwt")
+            if (!jwt) {
+                window.location.assign(`${window.location.protocol}//${window.location.hostname}:${window.location.port}/signin`)
+            }
+            const response = await window.fetch(`/api/payments/${id}/`, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`
+                },
+                method: 'POST'
+            })
+            if (response.ok) {
+                window.location.reload()
+            } else {
+                alert(`Error ${response.status}!`)
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const userStatus = document.getElementById("user-status")
+            const jwt = window.localStorage.getItem("jwt")
+            let me
             if (jwt) {
                 userStatus.innerHTML = `
                     <button onclick="signOut()" class="bg-blue-500 text-white font-medium text-lg text-center w-24 h-8 rounded drop-shadow">Sign out<button>
                 `
+                me = await window.fetch("/api/auth/me/", {
+                    headers: {
+                        "Authorization": `Bearer ${jwt}`
+                    },
+                    method: "GET"
+                })
+                me = await me.json()
+                const billsContainer = document.getElementById("bills")
+                const textTitlePayment = document.createElement('p')
+                textTitlePayment.innerText = 'Bills'
+                textTitlePayment.className = "text-gray-700 text-3xl font-bold"
+                billsContainer.appendChild(textTitlePayment)
+                const responseBill = await window.fetch(`/api/bills/user/${me.id}`)
+                if (responseBill.ok) {
+                    const bills = await responseBill.json()
+                    for (let index = 0; index < bills?.length; index++) {
+                        const billContainer = document.createElement('div')
+                        const payButton = `<button class="bg-blue-500 rounded px-3 py-2 drop-shadow text-white font-semibold" onclick="payBill(${bills[index].id})">Pay</button>`
+                        billContainer.className = "drop-shadow px-3 py-2 bg-white my-2 rounded flex justify-between items-center"
+                        billContainer.innerHTML = `
+                            <div class="flex flex-row items-center space-x-3">
+                                <p class="font-semibold text-gray-700 text-2xl">${index}. ${bills[index].total} VND</p>
+                                <p class="font-semibold bg-blue-400 text-white py-1 px-3 rounded drop-shadow text-lg">${bills[index].status}</p>
+                            </div>
+                            ${bills[index].paidAt ? '' : payButton}
+                        `
+                        billsContainer.appendChild(billContainer)
+                    }
+
+                }
             } else {
                 userStatus.innerHTML = `
                     <a class="bg-blue-500 text-white font-medium text-lg text-center w-24 h-8 block rounded leading-8 drop-shadow" href="/signin">Sign in<a> 
                 `
             }
+            const response = await window.fetch("/api/parking_lots/", {
+                method: 'GET'
+            })
+            if (response.status == 200) {
+                const parkingLots = await response.json()
+                const parkingLotsElement = document.getElementById("parking-lots")
+                console.log(parkingLots)
+                for (let index = 0; index < parkingLots.length; index++) {
+                    const parkingLotContainer = document.createElement("div")
+                    parkingLotContainer.className = "w-full flex flex-col"
+                    parkingLotContainer.innerHTML = `
+                        <div class="w-full bg-blue-500 drop-shadow rounded">
+                            <p class="text-white text-2xl px-3 py-2 font-bold">${parkingLots[index]['location']}</p>
+                        </div>
+                    `
+                    parkingLots[index].bicycles?.forEach((value, idx) => {
+                        console.log(value['user']?.['id'] == me?.['id'])
+                        const borrowButton = `<button class="bg-blue-500 rounded px-3 py-2 drop-shadow text-white font-semibold" onclick="borrowBicycle(${value['id']})">Borrow</button>`
+                        const payButton = `<button class="bg-red-500 rounded px-3 py-2 drop-shadow text-white font-semibold" onclick="payBicycle(${value['id']})">Pay</button>`
+                        parkingLotContainer.innerHTML += `
+                            <div class="drop-shadow px-3 py-2 bg-white my-2 rounded flex justify-between items-center">
+                                <p class="font-semibold text-gray-700 text-xl">${idx}. ${value['bicycleType']}</p>
+                                ${value.user ? ((value.user?.id == me?.id) ? payButton : '')
+                                : borrowButton}
+                            </div>
+                        `
+                    })
+                    parkingLotsElement.appendChild(parkingLotContainer)
+                }
+            }
+
+
+
         })
     </script>
 </body>
