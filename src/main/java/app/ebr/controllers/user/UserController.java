@@ -106,7 +106,7 @@ public class UserController {
                 total *= 1.5f;
             }
             // New bill
-            this.billRepository.save(new Bill(user, total, timeStarted, timeEnded));
+            this.billRepository.save(new Bill(user, _bicycle, total, timeStarted, timeEnded));
             _bicycle.setUser(null);
             _bicycle.setTimeStarted(null);
             this.bicycleRepository.save(_bicycle);

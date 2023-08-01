@@ -32,9 +32,6 @@ public class Bicycle {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // @Column(name = "using")
-    // private boolean using;
-
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "bicycle_type")
     private BicycleType bicycleType;
@@ -42,12 +39,16 @@ public class Bicycle {
     @Column(name = "time_started")
     private Date timeStarted;
 
+    @Column(name = "license_plates")
+    private String licensePlates;
+
     public Bicycle() {
 
     }
 
-    public Bicycle(BicycleType bicycleType) {
+    public Bicycle(BicycleType bicycleType, String licensePlates) {
         this.bicycleType = bicycleType;
+        this.licensePlates = licensePlates;
     }
 
     public void setId(int id) {
@@ -65,14 +66,6 @@ public class Bicycle {
     public ParkingLot getParkingLot() {
         return parkingLot;
     }
-
-    // public void setUsing(boolean using) {
-    // this.using = using;
-    // }
-
-    // public boolean isUsing() {
-    // return using;
-    // }
 
     public void setUser(User user) {
         this.user = user;
@@ -96,6 +89,14 @@ public class Bicycle {
 
     public BicycleType getBicycleType() {
         return bicycleType;
+    }
+
+    public void setLicensePlates(String licensePlates) {
+        this.licensePlates = licensePlates;
+    }
+
+    public String getLicensePlates() {
+        return licensePlates;
     }
 
 }

@@ -50,6 +50,8 @@ public class BillController {
             bill.getUser().setBills(null);
             bill.getUser().setBicycles(null);
             bill.getUser().setPassword("");
+            bill.getBicycle().setParkingLot(null);
+            bill.getBicycle().setUser(null);
         }
         return new ResponseEntity<List<Bill>>(_bills, HttpStatus.OK);
     }

@@ -48,16 +48,16 @@ public class ViewController {
 
     @RequestMapping(value = "/initial", method = { RequestMethod.GET })
     public ResponseEntity<?> initial() {
-        ParkingLot parkingLot = this.parkingLotRepository.save(new ParkingLot("HN"));
-        Bicycle bicycle1 = new Bicycle(BicycleType.COUPLE);
+        ParkingLot parkingLot = this.parkingLotRepository.save(new ParkingLot("Trung Kinh, Cau Giay, Ha Noi"));
+        Bicycle bicycle1 = new Bicycle(BicycleType.COUPLE, "29 - B3 23426");
         bicycle1.setParkingLot(parkingLot);
-        Bicycle bicycle2 = new Bicycle(BicycleType.ELECTRONIC);
+        Bicycle bicycle2 = new Bicycle(BicycleType.ELECTRONIC, "29 - B3 67433");
         bicycle2.setParkingLot(parkingLot);
-        Bicycle bicycle3 = new Bicycle(BicycleType.NORMAL);
+        Bicycle bicycle3 = new Bicycle(BicycleType.NORMAL, "29 - B3 43785");
         bicycle3.setParkingLot(parkingLot);
-        Bicycle bicycle4 = new Bicycle(BicycleType.COUPLE);
+        Bicycle bicycle4 = new Bicycle(BicycleType.COUPLE, "29 - B3 43647");
         bicycle4.setParkingLot(parkingLot);
-        Bicycle bicycle5 = new Bicycle(BicycleType.NORMAL);
+        Bicycle bicycle5 = new Bicycle(BicycleType.NORMAL, "29 - B3 74745");
         bicycle5.setParkingLot(parkingLot);
         List<Bicycle> bicycles = new ArrayList<>();
         bicycles.add(bicycle1);
@@ -66,7 +66,6 @@ public class ViewController {
         bicycles.add(bicycle4);
         bicycles.add(bicycle5);
         this.bicycleRepository.saveAll(bicycles);
-
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

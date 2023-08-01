@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import app.ebr.domains.enums.BillStatus;
@@ -45,12 +46,17 @@ public class Bill {
     @Column(name = "time_ended")
     private Date timeEnded;
 
+    @OneToOne
+    @JoinColumn(name = "bicycle_id")
+    private Bicycle bicycle;
+
     public Bill() {
 
     }
 
-    public Bill(User user, float total, Date timeStarted, Date timeEnded) {
+    public Bill(User user, Bicycle bicycle, float total, Date timeStarted, Date timeEnded) {
         this.user = user;
+        this.bicycle = bicycle;
         this.status = BillStatus.PENDING;
         this.total = total;
         this.timeStarted = timeStarted;
@@ -111,6 +117,14 @@ public class Bill {
 
     public Date getPaidAt() {
         return paidAt;
+    }
+
+    public void setBicycle(Bicycle bicycle) {
+        this.bicycle = bicycle;
+    }
+
+    public Bicycle getBicycle() {
+        return bicycle;
     }
 
 }
