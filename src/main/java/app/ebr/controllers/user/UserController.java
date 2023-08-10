@@ -24,9 +24,11 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import app.ebr.domains.enums.BicycleType;
 import app.ebr.domains.models.Bicycle;
 import app.ebr.domains.models.Bill;
+import app.ebr.domains.models.ParkingLot;
 import app.ebr.domains.models.User;
 import app.ebr.repositories.BicycleRepository;
 import app.ebr.repositories.BillRepository;
+import app.ebr.repositories.ParkingLotRepository;
 import app.ebr.repositories.UserRepository;
 import app.ebr.services.UserService;
 
@@ -42,6 +44,9 @@ public class UserController {
 
     @Autowired
     private BillRepository billRepository;
+
+    @Autowired
+    private ParkingLotRepository parkingLotRepository;
 
     @Autowired
     private UserService userService;
@@ -65,10 +70,11 @@ public class UserController {
         return new ResponseEntity<User>(user.get(), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/bicycle/{id}/return")
+    @PostMapping(value = "/bicycle/{id}/return/{parking_lot_id}")
     public ResponseEntity<?> bicycleReturn(
             @RequestHeader(required = true, name = HttpHeaders.AUTHORIZATION) String authorization,
-            @PathVariable(required = true) int id) {
+            @PathVariable(required = true) int id,
+            @PathVariable(required = true, name = "parking_lot_id") int parkingLotId) {
         String[] _authorization = authorization.split(" ");
         if (_authorization.length != 2 && !_authorization[0].equals("Bearer")) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -82,15 +88,23 @@ public class UserController {
             if (user == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
+            Optional<ParkingLot> newParkingLot = this.parkingLotRepository.findById(parkingLotId);
+            if (newParkingLot.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            ParkingLot _newParkingLot = newParkingLot.get();
             /// Replace
             Optional<Bicycle> bicycle = this.bicycleRepository.findById(id);
             if (bicycle.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
+
             Bicycle _bicycle = bicycle.get();
             if (_bicycle.getUser() == null && _bicycle.getUser().getId() != user.getId()) {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
+            ParkingLot _oldParkingLot = _bicycle.getParkingLot();
+
             Date timeEnded = new Date();
             Date timeStarted = _bicycle.getTimeStarted();
             long totalMinutes = ((timeEnded.getTime() - timeStarted.getTime()) / 1000) / 60;
@@ -104,6 +118,10 @@ public class UserController {
             }
             if (_bicycle.getBicycleType() != BicycleType.NORMAL) {
                 total *= 1.5f;
+            }
+            if (_newParkingLot.getId() != _oldParkingLot.getId()) {
+                _newParkingLot.getBicycles().add(_bicycle);
+                _oldParkingLot.getBicycles().remove(_bicycle);
             }
             // New bill
             this.billRepository.save(new Bill(user, _bicycle, total, timeStarted, timeEnded));
