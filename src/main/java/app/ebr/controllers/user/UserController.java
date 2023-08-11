@@ -67,6 +67,11 @@ public class UserController {
         if (user.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        for (Bicycle bicycle : user.get().getBicycles()) {
+            bicycle.setUser(null);
+            bicycle.setParkingLot(null);
+        }
+        user.get().setBills(null);
         return new ResponseEntity<User>(user.get(), HttpStatus.OK);
     }
 
@@ -103,7 +108,6 @@ public class UserController {
             if (_bicycle.getUser() == null && _bicycle.getUser().getId() != user.getId()) {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
-            ParkingLot _oldParkingLot = _bicycle.getParkingLot();
 
             Date timeEnded = new Date();
             Date timeStarted = _bicycle.getTimeStarted();
@@ -119,14 +123,12 @@ public class UserController {
             if (_bicycle.getBicycleType() != BicycleType.NORMAL) {
                 total *= 1.5f;
             }
-            if (_newParkingLot.getId() != _oldParkingLot.getId()) {
-                _newParkingLot.getBicycles().add(_bicycle);
-                _oldParkingLot.getBicycles().remove(_bicycle);
-            }
+
             // New bill
             this.billRepository.save(new Bill(user, _bicycle, total, timeStarted, timeEnded));
             _bicycle.setUser(null);
             _bicycle.setTimeStarted(null);
+            _bicycle.setParkingLot(_newParkingLot);
             this.bicycleRepository.save(_bicycle);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {

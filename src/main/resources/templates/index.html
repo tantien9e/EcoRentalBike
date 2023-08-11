@@ -34,6 +34,11 @@
     </section>
     <section class="w-full flex justify-center items-center">
       <div class="w-3/5 py-3 px-2">
+        <div id="list-bicycle-of-user"></div>
+      </div>
+    </section>
+    <section class="w-full flex justify-center items-center">
+      <div class="w-3/5 py-3 px-2">
         <div id="parking-lots"></div>
       </div>
     </section>
@@ -63,19 +68,26 @@
         }
       }
 
-      async function payBicycle(id) {
+      async function payBicycle(bicycleId, indexParkingLotId) {
         const jwt = window.localStorage.getItem("jwt");
         if (!jwt) {
           window.location.assign(
             `${window.location.protocol}//${window.location.hostname}:${window.location.port}/signin`
           );
         }
-        const response = await window.fetch(`/api/users/bicycle/${id}/return`, {
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-          },
-          method: "POST",
-        });
+
+        const parkingLotSelect = document.getElementById(
+          `select-parking-lot-${indexParkingLotId}`
+        );
+        const response = await window.fetch(
+          `/api/users/bicycle/${bicycleId}/return/${parkingLotSelect.value}`,
+          {
+            headers: {
+              Authorization: `Bearer ${jwt}`,
+            },
+            method: "POST",
+          }
+        );
         if (response.ok) {
           window.location.reload();
         } else {
@@ -107,6 +119,10 @@
         const userStatus = document.getElementById("user-status");
         const jwt = window.localStorage.getItem("jwt");
         let me;
+        const responseParkingLots = await window.fetch("/api/parking_lots/", {
+          method: "GET",
+        });
+        const parkingLots = await responseParkingLots.json();
         if (jwt) {
           userStatus.innerHTML = `
                     <button onclick="signOut()" class="bg-blue-500 text-white font-medium text-lg text-center w-24 h-8 rounded drop-shadow">Sign out<button>
@@ -150,21 +166,68 @@
               billsContainer.appendChild(billContainer);
             }
           }
+
+          const listBicyclesOfUserContainer = document.getElementById(
+            "list-bicycle-of-user"
+          );
+          const responseListBicyclesOfUser = await window.fetch(
+            `/api/users/${me.id}`
+          );
+          const textTitleListBicyclesOfUserContainer =
+            document.createElement("p");
+          textTitleListBicyclesOfUserContainer.innerText = "Bicycles Of User";
+          textTitleListBicyclesOfUserContainer.className =
+            "text-gray-700 text-3xl font-bold";
+          listBicyclesOfUserContainer.appendChild(
+            textTitleListBicyclesOfUserContainer
+          );
+
+          const returnBicycle = (bicycleId, parkingLotId) => {};
+          if (responseListBicyclesOfUser.ok) {
+            bicycles = (await responseListBicyclesOfUser.json())["bicycles"];
+            for (let index = 0; index < bicycles?.length; index++) {
+              let selectionParkingLot = "";
+              for (let idx = 0; idx < parkingLots?.length; idx++) {
+                selectionParkingLot += `
+                  <option value=${parkingLots[idx]["id"]} class="text-lg text-bold">${parkingLots[idx]["location"]}</option>
+                `;
+              }
+              selectionParkingLot = `<select id="select-parking-lot-${index}" class="px-2 py-2 mr-2 rounded drop-shadow">${selectionParkingLot}</select>`;
+              listBicyclesOfUserContainer.innerHTML += `
+                        <div class="flex flex-col w-full drop-shadow bg-white px-3 py-2 rounded my-2">
+                            <div class="flex justify-between items-center">
+                                <p class="font-semibold text-gray-700 text-xl">${index}. ${
+                bicycles[index]["bicycleType"]
+              }</p>
+                            </div>
+                            <p class="font-bold text-xl text-gray-500">(${
+                              bicycles[index]?.licensePlates
+                            })</p>
+                            <p class="font-bold text-lg text-gray-600">${new Date(
+                              bicycles[index]?.timeStarted
+                            ).toLocaleString(new Intl.Locale("VN"))}</p>
+                            <div>
+                              ${selectionParkingLot}
+                              <button class="bg-red-500 rounded px-3 py-2 drop-shadow text-white font-semibold" onclick="payBicycle(${
+                                bicycles[index]["id"]
+                              },${index})">Pay</button>
+                            </div>
+                        </div>
+                        `;
+            }
+          }
         } else {
           userStatus.innerHTML = `
                     <a class="bg-blue-500 text-white font-medium text-lg text-center w-24 h-8 block rounded leading-8 drop-shadow" href="/signin">Sign in<a> 
                 `;
         }
-        const response = await window.fetch("/api/parking_lots/", {
-          method: "GET",
-        });
-        if (response.status == 200) {
-          const parkingLots = await response.json();
+
+        if (responseParkingLots.status == 200) {
           const parkingLotsElement = document.getElementById("parking-lots");
           console.log(parkingLots);
-          for (let index = 0; index < parkingLots.length; index++) {
+          for (let index = 0; index < parkingLots?.length; index++) {
             const parkingLotContainer = document.createElement("div");
-            parkingLotContainer.className = "w-full flex flex-col";
+            parkingLotContainer.className = "w-full flex flex-col my-2";
             parkingLotContainer.innerHTML = `
                         <div class="w-full bg-blue-500 drop-shadow rounded">
                             <p class="text-white text-2xl px-3 py-2 font-bold">Parking Lot: ${parkingLots[index]["location"]}</p>
@@ -172,20 +235,14 @@
                     `;
             parkingLots[index].bicycles?.forEach((value, idx) => {
               const borrowButton = `<button class="bg-blue-500 rounded px-3 py-2 drop-shadow text-white font-semibold" onclick="borrowBicycle(${value["id"]})">Borrow</button>`;
-              const payButton = `<button class="bg-red-500 rounded px-3 py-2 drop-shadow text-white font-semibold" onclick="payBicycle(${value["id"]})">Pay</button>`;
+              // const payButton = `<button class="bg-red-500 rounded px-3 py-2 drop-shadow text-white font-semibold" onclick="payBicycle(${value["id"]})">Pay</button>`;
               parkingLotContainer.innerHTML += `
                         <div class="flex flex-col w-full drop-shadow bg-white px-3 py-2 rounded my-2">
                             <div class="flex justify-between items-center">
                                 <p class="font-semibold text-gray-700 text-xl">${idx}. ${
                 value["bicycleType"]
               }</p>
-                                ${
-                                  value.user
-                                    ? value.user?.id == me?.id
-                                      ? payButton
-                                      : ""
-                                    : borrowButton
-                                }
+                                ${value.user ? "" : borrowButton}
                             </div>
                             <p class="font-bold text-xl text-gray-500">(${
                               value?.licensePlates

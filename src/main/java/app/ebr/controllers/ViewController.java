@@ -66,6 +66,25 @@ public class ViewController {
         bicycles.add(bicycle4);
         bicycles.add(bicycle5);
         this.bicycleRepository.saveAll(bicycles);
+
+        ParkingLot parkingLot1 = this.parkingLotRepository.save(new ParkingLot("Quan Nhan, Nhan Chinh, Ha Noi"));
+        Bicycle bicycle6 = new Bicycle(BicycleType.COUPLE, "29 - B3 34534");
+        bicycle6.setParkingLot(parkingLot1);
+        Bicycle bicycle7 = new Bicycle(BicycleType.ELECTRONIC, "29 - B3 79534");
+        bicycle7.setParkingLot(parkingLot1);
+        Bicycle bicycle8 = new Bicycle(BicycleType.NORMAL, "29 - B3 43566");
+        bicycle8.setParkingLot(parkingLot1);
+        Bicycle bicycle9 = new Bicycle(BicycleType.COUPLE, "29 - B3 12432");
+        bicycle9.setParkingLot(parkingLot1);
+        Bicycle bicycle10 = new Bicycle(BicycleType.NORMAL, "29 - B3 07465");
+        bicycle10.setParkingLot(parkingLot1);
+        List<Bicycle> bicycles1 = new ArrayList<>();
+        bicycles1.add(bicycle6);
+        bicycles1.add(bicycle7);
+        bicycles1.add(bicycle8);
+        bicycles1.add(bicycle9);
+        bicycles1.add(bicycle10);
+        this.bicycleRepository.saveAll(bicycles1);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

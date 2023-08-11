@@ -83,6 +83,7 @@ public class BicycleController {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
             _bicycle.setUser(user);
+            _bicycle.setParkingLot(null);
             _bicycle.setTimeStarted(new Date());
             this.bicycleRepository.save(_bicycle);
             return new ResponseEntity<>(HttpStatus.OK);
